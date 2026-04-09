@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vet Tech: Unit 2 Mastery</title>
+<style>
+  :root { --primary: #2563eb; --success: #16a34a; --error: #dc2626; --bg: #f8fafc; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: #1e293b; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
+  .card { background: white; border-radius: 12px; shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); padding: 32px; border: 1px solid #e2e8f0; }
+  h1 { font-size: 1.875rem; color: #0f172a; margin-bottom: 8px; }
+  .subtitle { color: #64748b; margin-bottom: 32px; font-size: 0.875rem; }
+  
+  .btn { padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-size: 1rem; width: 100%; margin: 8px 0; }
+  .btn-choice { background: #f1f5f9; text-align: left; border: 2px solid #f1f5f9; }
+  .btn-choice:hover { background: #e2e8f0; }
+  .btn-primary { background: var(--primary); color: white; margin-top: 24px; }
+  .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+  
+  .correct { background: #dcfce7 !important; border-color: var(--success) !important; color: #166534; }
+  .wrong { background: #fee2e2 !important; border-color: var(--error) !important; color: #991b1b; }
+  
+  .hidden { display: none; }
+  #feedback { margin-top: 16px; padding: 12px; border-radius: 6px; font-weight: 700; }
+  .progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; margin-bottom: 20px; overflow: hidden; }
+  #progressInner { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+  .missed-item { border-left: 4px solid var(--error); padding: 12px; margin-bottom: 12px; background: #fff5f5; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Vet Tech Mastery</h1>
+  <p class="subtitle">Based strictly on current Unit 2 notes: Skin, GI/Renal, and Immune Systems.</p>
+
+  <div id="startMenu">
+    <h3>Select Exam Topic:</h3>
+    <button class="btn btn-choice" onclick="startQuiz('skin')">🛡️ Skin & Appendages</button>
+    <button class="btn btn-choice" onclick="startQuiz('gi')">🧪 GI Physiology & Adaptations</button>
+    <button class="btn btn-choice" onclick="startQuiz('immune')">🦠 Innate & Adaptive Immunity</button>
+    <button class="btn btn-primary" onclick="startQuiz('all')">🔥 COMPREHENSIVE FINAL EXAM</button>
+  </div>
+
+  <div id="quizBox" class="hidden">
+    <div class="progress-bar"><div id="progressInner"></div></div>
+    <div id="qCount" style="font-size: 0.75rem; font-weight: bold; color: var(--primary);"></div>
+    <div id="questionText" style="font-size: 1.25rem; margin: 20px 0; font-weight: 600;"></div>
+    <div id="optionsBox"></div>
+    <div id="feedback" class="hidden"></div>
+    <button id="nextBtn" class="btn btn-primary" onclick="handleNext()" disabled>Next Question</button>
+  </div>
+
+  <div id="resultBox" class="hidden">
+    <h2>Exam Summary</h2>
+    <h1 id="scoreBig" style="font-size: 4rem; margin: 0;">0%</h1>
+    <p id="scoreDetail"></p>
+    <hr>
+    <h3>Questions to Review:</h3>
+    <div id="reviewList"></div>
+    <button class="btn btn-primary" onclick="location.reload()">Restart Study Session</button>
+  </div>
+</div>
+
+<script>
+const bank = {
+  skin: [
+    { q: "Regarding vitamin D synthesis, which statement is CORRECT based on class notes?", a: ["Sunlight triggers conversion in the skin, which is essential for calcium absorption.", "Vitamin D is produced in the hypodermis to prevent skin cancer.", "Dogs synthesize 100% of their vitamin D from dietary fats alone.", "Vitamin D synthesis is a function of the sebaceous glands."], c: 0 },
+    { q: "A patient presents with 'pustules' and a breach in the skin barrier. What is the most likely outcome for 'resident' microflora?", a: ["They become opportunistic pathogens.", "They die off due to increased pH.", "They migrate to the bone to start 1st intention healing.", "They produce more sebum to close the wound."], c: 0 },
+    { q: "Which of the following is an 'appendage' of the skin composed of keratin?", a: ["Horns, hooves, and claws", "The hypodermis and dermis", "Sebaceous and sweat glands", "Melanocytes and keratinocytes"], c: 0 },
+    { q: "Dehorning an ADULT animal is different from a neonate because:", a: ["Older animals have a bone core that must be removed.", "Adults do not have a corneal process.", "Chemical pastes work better on older skin.", "Adult horns are not keratinized."], c: 0 },
+    { q: "Piloerection (hair standing up) serves what primary function in cold climates?", a: ["Traps a layer of air for insulation.", "Increases the surface area for sweating.", "Reduces the production of Vitamin D.", "Signals the immune system to release neutrophils."], c: 0 }
+  ],
+  gi: [
+    { q: "In the proximal tubule, the Na+/K+-ATPase pump operates with which stoichiometry?", a: ["3 Na+ out / 2 K+ in", "2 Na+ out / 3 K+ in", "1 Na+ out / 1 K+ in", "3 Na+ in / 2 K+ out"], c: 0 },
+    { q: "Why does hyperglycemia (high blood sugar) lead to polyuria (excessive urination)?", a: ["Glucose is osmotic and 'drags' water into the urine.", "The kidney intentionally flushes water to cool the blood.", "The Na+/K+ pump reverses to remove sugar.", "Glucose blocks the ADH receptors in the bladder."], c: 0 },
+    { q: "Which animal is an 'obligate carnivore' that relies essentially on protein for gluconeogenesis?", a: ["Cat", "Dog", "Horse", "Pig"], c: 0 },
+    { q: "What is the primary site of microbial fermentation in 'hindgut fermenters' like the horse?", a: ["Cecum and Colon", "Rumen and Reticulum", "Stomach and Duodenum", "Jejunum and Ileum"], c: 0 },
+    { q: "The 'Brush Border' in the small intestine is actually composed of:", a: ["Microvilli", "Smooth muscle", "Mucosal folds called rugae", "Serosal fluid"], c: 0 },
+    { q: "Which chamber of the ruminant stomach is considered the 'true' or glandular stomach?", a: ["Abomasum", "Rumen", "Reticulum", "Omasum"], c: 0 }
+  ],
+  immune: [
+    { q: "Which cell is a 'professional phagocyte' and typically the first responder to acute inflammation?", a: ["Neutrophil", "B-Lymphocyte", "T-Helper Cell", "Basophil"], c: 0 },
+    { q: "Passive immunity (like colostrum) differs from Active immunity because passive immunity:", a: ["Does not produce long-term memory cells.", "Takes weeks to become effective.", "Requires the animal to be sick first.", "Is only found in adult animals."], c: 0 },
+    { q: "The 'Complement System' tags pathogens for destruction. This 'tagging' process is called:", a: ["Opsonization", "Hemostasis", "Piloerection", "Gluconeogenesis"], c: 0 },
+    { q: "Which antibody class is typically the FIRST to appear during a primary immune response?", a: ["IgM", "IgG", "IgE", "IgA"], c: 0 },
+    { q: "A 'tattletale' cell that discovers an antigen and presents it to the adaptive immune system is the:", a: ["Dendritic Cell", "Platelet", "Red Blood Cell", "Neutrophil"], c: 0 }
+  ]
+};
+
+let currentSet = [];
+let qIdx = 0;
+let score = 0;
+let missed = [];
+
+function startQuiz(cat) {
+  if(cat === 'all') currentSet = [...bank.skin, ...bank.gi, ...bank.immune];
+  else currentSet = [...bank[cat]];
+  
+  currentSet.sort(() => Math.random() - 0.5);
+  document.getElementById('startMenu').classList.add('hidden');
+  document.getElementById('quizBox').classList.remove('hidden');
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = currentSet[qIdx];
+  document.getElementById('qCount').textContent = `QUESTION ${qIdx + 1} OF ${currentSet.length}`;
+  document.getElementById('progressInner').style.width = `${(qIdx / currentSet.length) * 100}%`;
+  document.getElementById('questionText').textContent = q.q;
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('feedback').classList.add('hidden');
+  
+  const box = document.getElementById('optionsBox');
+  box.innerHTML = '';
+  
+  // Shuffle options
+  let opts = q.a.map((t, i) => ({t, isCorrect: i === q.c}));
+  opts.sort(() => Math.random() - 0.5);
+  
+  opts.forEach(opt => {
+    const b = document.createElement('button');
+    b.className = 'btn btn-choice';
+    b.textContent = opt.t;
+    b.onclick = () => checkAns(opt.isCorrect, b, q.a[q.c]);
+    box.appendChild(b);
+  });
+}
+
+function checkAns(isCorrect, btn, correctText) {
+  const allBtns = document.querySelectorAll('.btn-choice');
+  allBtns.forEach(b => {
+    b.disabled = true;
+    if(b.textContent === correctText) b.classList.add('correct');
+  });
+
+  if(isCorrect) {
+    score++;
+    document.getElementById('feedback').textContent = "✨ Correct!";
+    document.getElementById('feedback').style.color = "var(--success)";
+  } else {
+    btn.classList.add('wrong');
+    missed.push({q: currentSet[qIdx].q, a: correctText});
+    document.getElementById('feedback').textContent = "❌ Not quite.";
+    document.getElementById('feedback').style.color = var(--error);
+  }
+  
+  document.getElementById('feedback').classList.remove('hidden');
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function handleNext() {
+  qIdx++;
+  if(qIdx < currentSet.length) showQuestion();
+  else showResults();
+}
+
+function showResults() {
+  document.getElementById('quizBox').classList.add('hidden');
+  document.getElementById('resultBox').classList.remove('hidden');
+  const pct = Math.round((score / currentSet.length) * 100);
+  document.getElementById('scoreBig').textContent = pct + "%";
+  document.getElementById('scoreDetail').textContent = `You got ${score} out of ${currentSet.length} questions correct.`;
+  
+  const list = document.getElementById('reviewList');
+  if(missed.length === 0) list.innerHTML = "<p>Perfect! You've mastered this section.</p>";
+  else {
+    missed.forEach(m => {
+      const d = document.createElement('div');
+      d.className = 'missed-item';
+      d.innerHTML = `<strong>Q:</strong> ${m.q}<br><strong>Correct Answer:</strong> ${m.a}`;
+      list.appendChild(d);
+    });
+  }
+}
+</script>
+</body>
+</html>
