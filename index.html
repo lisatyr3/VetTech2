@@ -99,16 +99,28 @@ body {
 <script>
 const bank = {
   skin: [
-    { q: "Regarding vitamin D synthesis, which statement is CORRECT?", a: ["Sunlight triggers conversion in the skin.", "Hypodermis only", "Diet only", "Sebaceous glands"], c: 0 },
-    { q: "Keratin appendage?", a: ["Horns", "Dermis", "Glands", "Cells"], c: 0 }
+    { q: "Regarding vitamin D synthesis, which statement is CORRECT based on class notes?", a: ["Sunlight triggers conversion in the skin, which is essential for calcium absorption.", "Vitamin D is produced in the hypodermis to prevent skin cancer.", "Dogs synthesize 100% of their vitamin D from dietary fats alone.", "Vitamin D synthesis is a function of the sebaceous glands."], c: 0 },
+    { q: "A patient presents with 'pustules' and a breach in the skin barrier. What is the most likely outcome for 'resident' microflora?", a: ["They become opportunistic pathogens.", "They die off due to increased pH.", "They migrate to the bone to start 1st intention healing.", "They produce more sebum to close the wound."], c: 0 },
+    { q: "Which of the following is an 'appendage' of the skin composed of keratin?", a: ["Horns, hooves, and claws", "The hypodermis and dermis", "Sebaceous and sweat glands", "Melanocytes and keratinocytes"], c: 0 },
+    { q: "Dehorning an ADULT animal is different from a neonate because:", a: ["Older animals have a bone core that must be removed.", "Adults do not have a corneal process.", "Chemical pastes work better on older skin.", "Adult horns are not keratinized."], c: 0 },
+    { q: "Piloerection (hair standing up) serves what primary function in cold climates?", a: ["Traps a layer of air for insulation.", "Increases the surface area for sweating.", "Reduces the production of Vitamin D.", "Signals the immune system to release neutrophils."], c: 0 }
   ],
+
   gi: [
-    { q: "Na/K ratio?", a: ["3/2", "2/3", "1/1", "Reverse"], c: 0 },
-    { q: "Obligate carnivore?", a: ["Cat", "Dog", "Horse", "Pig"], c: 0 }
+    { q: "In the proximal tubule, the Na+/K+-ATPase pump operates with which stoichiometry?", a: ["3 Na+ out / 2 K+ in", "2 Na+ out / 3 K+ in", "1 Na+ out / 1 K+ in", "3 Na+ in / 2 K+ out"], c: 0 },
+    { q: "Why does hyperglycemia (high blood sugar) lead to polyuria (excessive urination)?", a: ["Glucose is osmotic and 'drags' water into the urine.", "The kidney intentionally flushes water to cool the blood.", "The Na+/K+ pump reverses to remove sugar.", "Glucose blocks the ADH receptors in the bladder."], c: 0 },
+    { q: "Which animal is an 'obligate carnivore' that relies essentially on protein for gluconeogenesis?", a: ["Cat", "Dog", "Horse", "Pig"], c: 0 },
+    { q: "What is the primary site of microbial fermentation in 'hindgut fermenters' like the horse?", a: ["Cecum and Colon", "Rumen and Reticulum", "Stomach and Duodenum", "Jejunum and Ileum"], c: 0 },
+    { q: "The 'Brush Border' in the small intestine is actually composed of:", a: ["Microvilli", "Smooth muscle", "Mucosal folds called rugae", "Serosal fluid"], c: 0 },
+    { q: "Which chamber of the ruminant stomach is considered the 'true' or glandular stomach?", a: ["Abomasum", "Rumen", "Reticulum", "Omasum"], c: 0 }
   ],
+
   immune: [
-    { q: "First responder?", a: ["Neutrophil", "RBC", "Platelet", "Neuron"], c: 0 },
-    { q: "First antibody?", a: ["IgM", "IgG", "IgE", "IgA"], c: 0 }
+    { q: "Which cell is a 'professional phagocyte' and typically the first responder to acute inflammation?", a: ["Neutrophil", "B-Lymphocyte", "T-Helper Cell", "Basophil"], c: 0 },
+    { q: "Passive immunity (like colostrum) differs from Active immunity because passive immunity:", a: ["Does not produce long-term memory cells.", "Takes weeks to become effective.", "Requires the animal to be sick first.", "Is only found in adult animals."], c: 0 },
+    { q: "The 'Complement System' tags pathogens for destruction. This 'tagging' process is called:", a: ["Opsonization", "Hemostasis", "Piloerection", "Gluconeogenesis"], c: 0 },
+    { q: "Which antibody class is typically the FIRST to appear during a primary immune response?", a: ["IgM", "IgG", "IgE", "IgA"], c: 0 },
+    { q: "A 'tattletale' cell that discovers an antigen and presents it to the adaptive immune system is the:", a: ["Dendritic Cell", "Platelet", "Red Blood Cell", "Neutrophil"], c: 0 }
   ]
 };
 
@@ -117,7 +129,6 @@ let qIdx = 0;
 let score = 0;
 let missed = [];
 
-// Attach NEXT button once (important)
 document.getElementById("nextBtn").onclick = handleNext;
 
 function startQuiz(cat) {
@@ -139,6 +150,7 @@ function startQuiz(cat) {
 
 function showQuestion() {
   const q = currentSet[qIdx];
+  const box = document.getElementById("optionsBox");
 
   document.getElementById("qCount").textContent =
     `Question ${qIdx+1} of ${currentSet.length}`;
@@ -147,8 +159,6 @@ function showQuestion() {
     `${(qIdx/currentSet.length)*100}%`;
 
   document.getElementById("questionText").textContent = q.q;
-
-  const box = document.getElementById("optionsBox");
   box.innerHTML = "";
 
   document.getElementById("feedback").textContent = "";
@@ -163,7 +173,7 @@ function showQuestion() {
     btn.textContent = opt.t;
 
     btn.onclick = () => {
-      document.querySelectorAll(".btn-choice").forEach(b=>{
+      box.querySelectorAll(".btn-choice").forEach(b=>{
         b.disabled = true;
         if(b.textContent === q.a[q.c]) b.classList.add("correct");
       });
@@ -205,11 +215,15 @@ function showResults() {
   const list = document.getElementById("reviewList");
   list.innerHTML = "";
 
-  missed.forEach(m=>{
-    const d = document.createElement("div");
-    d.innerHTML = `<strong>Q:</strong> ${m.q}<br><strong>A:</strong> ${m.a}`;
-    list.appendChild(d);
-  });
+  if(missed.length === 0){
+    list.innerHTML = "<p>Perfect! 🎉</p>";
+  } else {
+    missed.forEach(m=>{
+      const d = document.createElement("div");
+      d.innerHTML = `<strong>Q:</strong> ${m.q}<br><strong>A:</strong> ${m.a}`;
+      list.appendChild(d);
+    });
+  }
 }
 
 function goHome() {
