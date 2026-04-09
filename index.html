@@ -43,8 +43,6 @@ body {
 .correct { background: #dcfce7 !important; }
 .wrong { background: #fee2e2 !important; }
 
-.hidden { display: none; }
-
 .progress-bar {
   height: 8px;
   background: #e2e8f0;
@@ -61,12 +59,6 @@ body {
   font-weight: bold;
   margin-top: 10px;
 }
-
-.missed-item {
-  background: #fff5f5;
-  padding: 10px;
-  margin: 6px 0;
-}
 </style>
 </head>
 
@@ -82,7 +74,7 @@ body {
   <button class="btn btn-primary" onclick="startQuiz('all')">🔥 FINAL EXAM</button>
 </div>
 
-<div id="quizBox" class="hidden">
+<div id="quizBox" style="display:none;">
   <div class="progress-bar"><div id="progressInner"></div></div>
   <div id="qCount"></div>
   <h3 id="questionText"></h3>
@@ -92,7 +84,7 @@ body {
   <button class="btn btn-primary" onclick="goHome()">🏠 Home</button>
 </div>
 
-<div id="resultBox" class="hidden">
+<div id="resultBox" style="display:none;">
   <h2 id="scoreBig"></h2>
   <p id="scoreDetail"></p>
 
@@ -138,6 +130,10 @@ let score = 0;
 let missed = [];
 
 function startQuiz(cat) {
+  document.getElementById('startMenu').style.display = "none";
+  document.getElementById('quizBox').style.display = "block";
+  document.getElementById('resultBox').style.display = "none";
+
   qIdx = 0;
   score = 0;
   missed = [];
@@ -146,9 +142,6 @@ function startQuiz(cat) {
   else currentSet = [...bank[cat]];
 
   currentSet.sort(() => Math.random() - 0.5);
-
-  document.getElementById('startMenu').classList.add('hidden');
-  document.getElementById('quizBox').classList.remove('hidden');
 
   showQuestion();
 }
@@ -213,8 +206,8 @@ function handleNext() {
 }
 
 function showResults() {
-  document.getElementById('quizBox').classList.add('hidden');
-  document.getElementById('resultBox').classList.remove('hidden');
+  document.getElementById('quizBox').style.display = "none";
+  document.getElementById('resultBox').style.display = "block";
 
   const pct = Math.round((score/currentSet.length)*100);
 
@@ -243,9 +236,9 @@ function goHome() {
   missed = [];
   currentSet = [];
 
-  document.getElementById('quizBox').classList.add('hidden');
-  document.getElementById('resultBox').classList.add('hidden');
-  document.getElementById('startMenu').classList.remove('hidden');
+  document.getElementById('quizBox').style.display = "none";
+  document.getElementById('resultBox').style.display = "none";
+  document.getElementById('startMenu').style.display = "block";
 
   document.getElementById('progressInner').style.width = "0%";
 
