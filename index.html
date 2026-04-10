@@ -6,241 +6,161 @@
 <title>Vet Tech Mastery</title>
 
 <style>
-:root {
-  --primary: #2563eb;
-  --success: #16a34a;
-  --error: #dc2626;
-  --bg: #f8fafc;
-}
-
-body {
-  font-family: system-ui;
-  background: var(--bg);
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 20px;
-}
-
-.card {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-}
-
-.btn {
-  padding: 12px;
-  margin: 8px 0;
-  width: 100%;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.btn-choice { background: #f1f5f9; }
-.btn-primary { background: var(--primary); color: white; }
-
-.correct { background: #dcfce7 !important; }
-.wrong { background: #fee2e2 !important; }
-
-.progress-bar {
-  height: 8px;
-  background: #e2e8f0;
-  margin-bottom: 20px;
-}
-
-#progressInner {
-  height: 100%;
-  width: 0%;
-  background: var(--primary);
-}
-
-#feedback {
-  font-weight: bold;
-  margin-top: 10px;
-}
+body { font-family: system-ui; max-width: 800px; margin: 40px auto; }
+.btn { padding: 12px; margin: 6px 0; width: 100%; cursor: pointer; }
+.correct { background: #c8f7c5; }
+.wrong { background: #f7c5c5; }
+.selected { background: #dbeafe; }
 </style>
 </head>
 
 <body>
 
-<div class="card">
+<h2>Select Topic</h2>
+<button onclick="startQuiz('skin')">Skin</button>
+<button onclick="startQuiz('gi')">GI</button>
+<button onclick="startQuiz('immune')">Immune</button>
+<button onclick="startQuiz('all')">FINAL EXAM</button>
 
-<div id="startMenu">
-  <h2>Select Topic</h2>
-  <button class="btn btn-choice" onclick="startQuiz('skin')">🛡️ Skin</button>
-  <button class="btn btn-choice" onclick="startQuiz('gi')">🧪 GI</button>
-  <button class="btn btn-choice" onclick="startQuiz('immune')">🦠 Immune</button>
-  <button class="btn btn-primary" onclick="startQuiz('all')">🔥 FINAL EXAM</button>
-</div>
+<hr>
 
 <div id="quizBox" style="display:none;">
-  <div class="progress-bar"><div id="progressInner"></div></div>
-  <div id="qCount"></div>
-  <h3 id="questionText"></h3>
-  <div id="optionsBox"></div>
-  <div id="feedback"></div>
-  <button id="nextBtn" class="btn btn-primary">Next</button>
-  <button class="btn btn-primary" onclick="goHome()">🏠 Home</button>
+<h3 id="qText"></h3>
+<div id="answers"></div>
+<p id="feedback"></p>
+<button onclick="nextQ()">Next</button>
+<button onclick="goHome()">Home</button>
 </div>
 
 <div id="resultBox" style="display:none;">
-  <h2 id="scoreBig"></h2>
-  <p id="scoreDetail"></p>
-
-  <h3>Review Missed:</h3>
-  <div id="reviewList"></div>
-
-  <button class="btn btn-primary" onclick="goHome()">🏠 Home</button>
-</div>
-
+<h2 id="score"></h2>
+<button onclick="goHome()">Home</button>
 </div>
 
 <script>
 const bank = {
-  skin: [
-    { q: "Regarding vitamin D synthesis, which statement is CORRECT based on class notes?", a: ["Sunlight triggers conversion in the skin, which is essential for calcium absorption.", "Vitamin D is produced in the hypodermis to prevent skin cancer.", "Dogs synthesize 100% of their vitamin D from dietary fats alone.", "Vitamin D synthesis is a function of the sebaceous glands."], c: 0 },
-    { q: "A patient presents with 'pustules' and a breach in the skin barrier. What is the most likely outcome for 'resident' microflora?", a: ["They become opportunistic pathogens.", "They die off due to increased pH.", "They migrate to the bone to start 1st intention healing.", "They produce more sebum to close the wound."], c: 0 },
-    { q: "Which of the following is an 'appendage' of the skin composed of keratin?", a: ["Horns, hooves, and claws", "The hypodermis and dermis", "Sebaceous and sweat glands", "Melanocytes and keratinocytes"], c: 0 },
-    { q: "Dehorning an ADULT animal is different from a neonate because:", a: ["Older animals have a bone core that must be removed.", "Adults do not have a corneal process.", "Chemical pastes work better on older skin.", "Adult horns are not keratinized."], c: 0 },
-    { q: "Piloerection (hair standing up) serves what primary function in cold climates?", a: ["Traps a layer of air for insulation.", "Increases the surface area for sweating.", "Reduces the production of Vitamin D.", "Signals the immune system to release neutrophils."], c: 0 }
-  ],
 
-  gi: [
-    { q: "In the proximal tubule, the Na+/K+-ATPase pump operates with which stoichiometry?", a: ["3 Na+ out / 2 K+ in", "2 Na+ out / 3 K+ in", "1 Na+ out / 1 K+ in", "3 Na+ in / 2 K+ out"], c: 0 },
-    { q: "Why does hyperglycemia (high blood sugar) lead to polyuria (excessive urination)?", a: ["Glucose is osmotic and 'drags' water into the urine.", "The kidney intentionally flushes water to cool the blood.", "The Na+/K+ pump reverses to remove sugar.", "Glucose blocks the ADH receptors in the bladder."], c: 0 },
-    { q: "Which animal is an 'obligate carnivore' that relies essentially on protein for gluconeogenesis?", a: ["Cat", "Dog", "Horse", "Pig"], c: 0 },
-    { q: "What is the primary site of microbial fermentation in 'hindgut fermenters' like the horse?", a: ["Cecum and Colon", "Rumen and Reticulum", "Stomach and Duodenum", "Jejunum and Ileum"], c: 0 },
-    { q: "The 'Brush Border' in the small intestine is actually composed of:", a: ["Microvilli", "Smooth muscle", "Mucosal folds called rugae", "Serosal fluid"], c: 0 },
-    { q: "Which chamber of the ruminant stomach is considered the 'true' or glandular stomach?", a: ["Abomasum", "Rumen", "Reticulum", "Omasum"], c: 0 }
-  ],
+immune: [
+{type:"mc",q:"Which cell does NOT phagocytize?",a:["Lymphocytes","Monocytes","Eosinophils","Neutrophils"],c:0},
+{type:"mc",q:"Complement proteins are:",a:["Always in plasma","Only in cells","Hormones","Enzymes"],c:0},
+{type:"multi",q:"Select cytokines:",a:["Interferon","Chemokines","Complement","Interleukins"],c:[0,1,3]},
+{type:"tf",q:"Lymph nodes filter lymph.",a:["True","False"],c:0},
+{type:"mc",q:"Removes old RBCs:",a:["Liver","Spleen","Kidney","Heart"],c:1},
+{type:"mc",q:"T cell development organ:",a:["Thymus","Bone marrow","Liver","Spleen"],c:0},
+{type:"mc",q:"B cell development:",a:["Bone marrow","Thymus","Spleen","Nodes"],c:0},
+{type:"mc",q:"White/red pulp organ:",a:["Spleen","Node","Liver","Thymus"],c:0},
+{type:"mc",q:"Physical barrier:",a:["Skin","Complement","Inflammation","Nodes"],c:0},
+{type:"mc",q:"Chemokines do:",a:["Attract WBC","Kill bacteria","Clot blood","Produce antibodies"],c:0},
+{type:"mc",q:"Opsonization:",a:["Tag pathogens","Kill directly","Make antibodies","Clot blood"],c:0},
+{type:"mc",q:"Humoral immunity cell:",a:["Plasma cell","T cell","NK cell","Platelet"],c:0},
+{type:"mc",q:"Helper T cells:",a:["Coordinate response","Kill cells","Make antibodies","Clot"],c:0},
+{type:"mc",q:"Largest WBC:",a:["Monocyte","Neutrophil","Lymphocyte","Basophil"],c:0}
+],
 
-  immune: [
-    { q: "Which cell is a 'professional phagocyte' and typically the first responder to acute inflammation?", a: ["Neutrophil", "B-Lymphocyte", "T-Helper Cell", "Basophil"], c: 0 },
-    { q: "Passive immunity (like colostrum) differs from Active immunity because passive immunity:", a: ["Does not produce long-term memory cells.", "Takes weeks to become effective.", "Requires the animal to be sick first.", "Is only found in adult animals."], c: 0 },
-    { q: "The 'Complement System' tags pathogens for destruction. This 'tagging' process is called:", a: ["Opsonization", "Hemostasis", "Piloerection", "Gluconeogenesis"], c: 0 },
-    { q: "Which antibody class is typically the FIRST to appear during a primary immune response?", a: ["IgM", "IgG", "IgE", "IgA"], c: 0 },
-    { q: "A 'tattletale' cell that discovers an antigen and presents it to the adaptive immune system is the:", a: ["Dendritic Cell", "Platelet", "Red Blood Cell", "Neutrophil"], c: 0 }
-  ]
+skin: [
+{type:"tf",q:"Only 2 genes control coat.",a:["True","False"],c:1},
+{type:"multi",q:"Shedding factors:",a:["Hormones","Genetics","Environment","None"],c:[0,1,2]},
+{type:"mc",q:"Claws purpose:",a:["Hunting/defense","Walking","Cooling","Digestion"],c:0},
+{type:"mc",q:"Dermis contains:",a:["Blood vessels","Hair","Muscle","All"],c:3},
+{type:"mc",q:"Black pigment:",a:["Eumelanin","Phaeomelanin","Melanin","Keratin"],c:0},
+{type:"mc",q:"Animal with spurs:",a:["Chicken","Dog","Cat","Horse"],c:0},
+{type:"multi",q:"Hair color purposes:",a:["Camouflage","Thermoregulation","Sex","Damage"],c:[0,1,2]},
+{type:"mc",q:"Horn purpose:",a:["Competition","Walking","Digestion","Cooling"],c:0},
+{type:"mc",q:"Keratinizing layer:",a:["Granulosum","Corneum","Dermis","Basale"],c:0},
+{type:"mc",q:"Dermis tissue:",a:["Connective","Muscle","Epithelial","Bone"],c:0},
+{type:"mc",q:"Waterproofing:",a:["Keratin","Mucin","GAG","Omentum"],c:0},
+{type:"mc",q:"Sebaceous glands:",a:["Waterproof","Cool","Digest","Absorb"],c:0},
+{type:"mc",q:"Hooves function:",a:["Walking surface","Defense","Cooling","Digestion"],c:0},
+{type:"multi",q:"Skin functions:",a:["Vitamin D","Protection","Temp control","All"],c:[0,1,2]},
+{type:"mc",q:"Thickest layer:",a:["Dermis","Epidermis","Hypodermis","Muscle"],c:0},
+{type:"mc",q:"Major epidermal cell:",a:["Keratinocyte","Melanocyte","Merkel","Langerhans"],c:0},
+{type:"mc",q:"Hypodermis:",a:["Fat/connective","Muscle","Bone","Epithelial"],c:0},
+{type:"tf",q:"Skin bacteria mostly harmless.",a:["True","False"],c:0},
+{type:"mc",q:"UV protection:",a:["Melanin","Keratin","Sweat","Lanolin"],c:0},
+{type:"mc",q:"Dendritic cells:",a:["Langerhans","Keratinocyte","Melanocyte","Merkel"],c:0}
+],
+
+gi: [
+{type:"mc",q:"Intestinal cell:",a:["Enterocyte","Hepatocyte","Monocyte","Osteocyte"],c:0},
+{type:"mc",q:"Lubrication organ:",a:["Salivary glands","Stomach","Colon","Pancreas"],c:0},
+{type:"mc",q:"Chemical digestion:",a:["Enzymatic breakdown","Chewing","Mixing","Absorption"],c:0},
+{type:"mc",q:"Stores feces:",a:["Rectum","Colon","Cecum","Anus"],c:0},
+{type:"mc",q:"Enzyme cells:",a:["Enterocytes","Goblet","Endocrine","Exocrine"],c:0},
+{type:"mc",q:"Liver function:",a:["Clotting proteins","RBC production","Digestion","Absorption"],c:0},
+{type:"mc",q:"Blind pouch:",a:["Cecum","Ileum","Colon","Rectum"],c:0},
+{type:"mc",q:"Mechanical digestion starts:",a:["Mouth","Stomach","Colon","Small intestine"],c:0},
+{type:"mc",q:"Pancreas enzymes:",a:["Exocrine","Endocrine","Neural","Hormonal"],c:0},
+{type:"mc",q:"Absorption cells:",a:["Enterocytes","Goblet","Endocrine","Exocrine"],c:0},
+{type:"mc",q:"Rumen fermentation:",a:["Rumen","Colon","Cecum","Stomach"],c:0},
+{type:"mc",q:"HCl stimulation:",a:["ACh gastrin histamine","CCK","Secretin","Insulin"],c:0},
+{type:"mc",q:"Sound organ:",a:["Larynx","Tongue","Teeth","Pharynx"],c:0},
+{type:"mc",q:"Not GI function:",a:["Filter toxins","Digestion","Mastication","Prehension"],c:0},
+{type:"mc",q:"After stomach:",a:["Duodenum","Ileum","Colon","Rectum"],c:0},
+{type:"mc",q:"Mucus cells:",a:["Protect stomach","Digest","Absorb","Clot"],c:0},
+{type:"mc",q:"Hindgut fermenter:",a:["Horse","Dog","Cat","Cow"],c:0},
+{type:"mc",q:"Ghrelin:",a:["Hunger","Insulin","Digestion","Sleep"],c:0},
+{type:"mc",q:"Mucosa:",a:["Epithelium","Muscle","Fat","Bone"],c:0},
+{type:"mc",q:"Poultry stomach:",a:["Proventriculus","Gizzard","Crop","Cecum"],c:0}
+]
+
 };
 
-let currentSet = [];
-let qIdx = 0;
-let score = 0;
-let missed = [];
+let current = [], i=0, score=0, selected=[];
 
-document.getElementById("nextBtn").onclick = handleNext;
-
-function startQuiz(cat) {
-  qIdx = 0;
-  score = 0;
-  missed = [];
-
-  if(cat === "all") currentSet = [...bank.skin, ...bank.gi, ...bank.immune];
-  else currentSet = [...bank[cat]];
-
-  currentSet.sort(() => Math.random() - 0.5);
-
-  document.getElementById("startMenu").style.display = "none";
-  document.getElementById("quizBox").style.display = "block";
-  document.getElementById("resultBox").style.display = "none";
-
-  showQuestion();
+function startQuiz(cat){
+i=0;score=0;
+current = cat==="all" ? [...bank.skin,...bank.gi,...bank.immune] : [...bank[cat]];
+current.sort(()=>Math.random()-0.5);
+document.getElementById("quizBox").style.display="block";
+showQ();
 }
 
-function showQuestion() {
-  const q = currentSet[qIdx];
-  const box = document.getElementById("optionsBox");
+function showQ(){
+const q=current[i];
+const box=document.getElementById("answers");
+box.innerHTML="";
+selected=[];
+document.getElementById("qText").innerText=q.q;
+document.getElementById("feedback").innerText="";
 
-  document.getElementById("qCount").textContent =
-    `Question ${qIdx+1} of ${currentSet.length}`;
+q.a.forEach((t,idx)=>{
+let b=document.createElement("button");
+b.className="btn";
+b.innerText=t;
 
-  document.getElementById("progressInner").style.width =
-    `${(qIdx/currentSet.length)*100}%`;
-
-  document.getElementById("questionText").textContent = q.q;
-  box.innerHTML = "";
-
-  document.getElementById("feedback").textContent = "";
-  document.getElementById("nextBtn").disabled = true;
-
-  let opts = q.a.map((t,i)=>({t,correct:i===q.c}));
-  opts.sort(()=>Math.random()-0.5);
-
-  opts.forEach(opt=>{
-    const btn = document.createElement("button");
-    btn.className = "btn btn-choice";
-    btn.textContent = opt.t;
-
-    btn.onclick = () => {
-      box.querySelectorAll(".btn-choice").forEach(b=>{
-        b.disabled = true;
-        if(b.textContent === q.a[q.c]) b.classList.add("correct");
-      });
-
-      if(opt.correct){
-        score++;
-        document.getElementById("feedback").textContent = "✅ Correct!";
-        document.getElementById("feedback").style.color = "green";
-      } else {
-        btn.classList.add("wrong");
-        missed.push({q:q.q,a:q.a[q.c]});
-        document.getElementById("feedback").textContent = "❌ Incorrect";
-        document.getElementById("feedback").style.color = "red";
-      }
-
-      document.getElementById("nextBtn").disabled = false;
-    };
-
-    box.appendChild(btn);
-  });
+b.onclick=()=>{
+if(q.type==="multi"){
+b.classList.toggle("selected");
+if(selected.includes(idx)) selected=selected.filter(x=>x!==idx);
+else selected.push(idx);
+}else{
+box.querySelectorAll("button").forEach(x=>x.disabled=true);
+if(idx===q.c){b.classList.add("correct");score++;}
+else b.classList.add("wrong");
+}
+};
+box.appendChild(b);
+});
 }
 
-function handleNext() {
-  qIdx++;
-  if(qIdx < currentSet.length) showQuestion();
-  else showResults();
+function nextQ(){
+const q=current[i];
+
+if(q.type==="multi"){
+if(JSON.stringify(selected.sort())===JSON.stringify(q.c.sort())) score++;
 }
 
-function showResults() {
-  document.getElementById("quizBox").style.display = "none";
-  document.getElementById("resultBox").style.display = "block";
-
-  const pct = Math.round((score/currentSet.length)*100);
-
-  document.getElementById("scoreBig").textContent = pct + "%";
-  document.getElementById("scoreDetail").textContent =
-    `You got ${score} out of ${currentSet.length}`;
-
-  const list = document.getElementById("reviewList");
-  list.innerHTML = "";
-
-  if(missed.length === 0){
-    list.innerHTML = "<p>Perfect! 🎉</p>";
-  } else {
-    missed.forEach(m=>{
-      const d = document.createElement("div");
-      d.innerHTML = `<strong>Q:</strong> ${m.q}<br><strong>A:</strong> ${m.a}`;
-      list.appendChild(d);
-    });
-  }
+i++;
+if(i<current.length) showQ();
+else {
+document.getElementById("quizBox").style.display="none";
+document.getElementById("resultBox").style.display="block";
+document.getElementById("score").innerText="Score: "+score+"/"+current.length;
+}
 }
 
-function goHome() {
-  qIdx = 0;
-  score = 0;
-  missed = [];
-  currentSet = [];
-
-  document.getElementById("quizBox").style.display = "none";
-  document.getElementById("resultBox").style.display = "none";
-  document.getElementById("startMenu").style.display = "block";
-
-  document.getElementById("progressInner").style.width = "0%";
-  document.getElementById("optionsBox").innerHTML = "";
-  document.getElementById("questionText").textContent = "";
-  document.getElementById("feedback").textContent = "";
-  document.getElementById("qCount").textContent = "";
+function goHome(){
+location.reload();
 }
 </script>
 
