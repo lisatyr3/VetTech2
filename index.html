@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vet Tech Mastery - Advanced Edition</title>
+<title>Vet Tech Mastery - The Full Exam</title>
 <style>
 :root { --primary: #2563eb; --success: #16a34a; --error: #dc2626; --bg: #f8fafc; }
-body { font-family: system-ui, sans-serif; background: var(--bg); max-width: 850px; margin: 20px auto; padding: 20px; }
+body { font-family: system-ui, sans-serif; background: var(--bg); max-width: 850px; margin: 20px auto; padding: 20px; line-height: 1.4; }
 .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 .btn { padding: 14px; margin: 8px 0; width: 100%; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
 .btn-choice { background: #f1f5f9; text-align: left; font-weight: normal; border: 1px solid #e2e8f0; }
@@ -14,28 +14,28 @@ body { font-family: system-ui, sans-serif; background: var(--bg); max-width: 850
 .btn-primary { background: var(--primary); color: white; }
 .correct { background: #dcfce7 !important; border-color: var(--success); }
 .wrong { background: #fee2e2 !important; border-color: var(--error); }
-.progress-bar { height: 10px; background: #e2e8f0; margin-bottom: 20px; border-radius: 5px; }
+.progress-bar { height: 10px; background: #e2e8f0; margin-bottom: 20px; border-radius: 5px; overflow: hidden; }
 #progressInner { height: 100%; width: 0%; background: var(--primary); transition: width 0.3s; }
-#feedback { font-weight: bold; margin: 15px 0; padding: 10px; border-radius: 5px; }
-.review-item { padding: 10px; border-bottom: 1px solid #eee; }
+#feedback { font-weight: bold; margin: 15px 0; padding: 15px; border-radius: 8px; display: none; }
+.review-item { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9em; }
 </style>
 </head>
 <body>
 
 <div class="card">
     <div id="startMenu">
-        <h1>🎓 Vet Tech Exam Prep</h1>
-        <p>This update includes <b>Clinical Scenario</b> questions and <b>Reverse Logic</b> to test your deep understanding.</p>
-        <button class="btn btn-choice" onclick="startQuiz('immune')">🦠 Immune System (Phagocytes & Organs)</button>
-        <button class="btn btn-choice" onclick="startQuiz('skin')">🛡️ Integumentary (Layers & Pigment)</button>
-        <button class="btn btn-choice" onclick="startQuiz('gi')">🧪 GI (Digestion & Ruminants)</button>
-        <button class="btn btn-choice" onclick="startQuiz('urinary')">💧 Urinary (Nephrons & BP)</button>
-        <button class="btn btn-primary" onclick="startQuiz('all')">🔥 THE GAUNTLET (All Mixed Questions)</button>
+        <h1>🎓 Vet Tech Exam: The Full Set</h1>
+        <p>I have combined the <b>80+ original questions</b> with <b>clinical reasoning</b> questions to test your mastery from every angle.</p>
+        <button class="btn btn-choice" onclick="startQuiz('immune')">🦠 Immune System (25 Questions)</button>
+        <button class="btn btn-choice" onclick="startQuiz('skin')">🛡️ Integumentary (25 Questions)</button>
+        <button class="btn btn-choice" onclick="startQuiz('gi')">🧪 Gastrointestinal (39 Questions)</button>
+        <button class="btn btn-choice" onclick="startQuiz('urinary')">💧 Urinary System (28 Questions)</button>
+        <button class="btn btn-primary" onclick="startQuiz('all')">🔥 THE FINAL EXAM (All Topics Combined)</button>
     </div>
 
     <div id="quizBox" style="display:none;">
         <div class="progress-bar"><div id="progressInner"></div></div>
-        <div id="qCount" style="color: #64748b; font-weight: bold;"></div>
+        <div id="qCount" style="color: #64748b; font-size: 0.85em; font-weight: bold; margin-bottom: 5px;"></div>
         <h3 id="questionText"></h3>
         <div id="optionsBox"></div>
         <div id="feedback"></div>
@@ -45,43 +45,73 @@ body { font-family: system-ui, sans-serif; background: var(--bg); max-width: 850
     <div id="resultBox" style="display:none;">
         <h2 id="scoreBig"></h2>
         <p id="scoreDetail"></p>
-        <h3>Focus Areas (Missed):</h3>
-        <div id="reviewList"></div>
-        <button class="btn btn-primary" onclick="goHome()">🏠 Back to Menu</button>
+        <div id="reviewContainer">
+            <h3>Review Missed Items:</h3>
+            <div id="reviewList"></div>
+        </div>
+        <button class="btn btn-primary" onclick="goHome()">🏠 Back to Main Menu</button>
     </div>
 </div>
 
 <script>
 const bank = {
     immune: [
-        { q: "A clinician finds a high count of 'Professional Phagocytes' in a wound. Which cell is LEAST likely to be part of this group?", a: ["Lymphocytes", "Monocytes", "Eosinophils", "Neutrophils"], c: 0 },
-        { q: "If an animal cannot produce Complement proteins, which immune process is most directly compromised?", a: ["Opsonization and Cell Lysis", "Production of T-cells", "Vitamin D synthesis", "Red pulp storage"], c: 0 },
-        { q: "Which organ acts as the 'Primary Filter' for lymph traveling from tissues back to the heart?", a: ["Lymph nodes", "Spleen", "Thymus", "Liver"], c: 0 },
-        { q: "Scenario: An aging dog has trouble filtering old RBCs. Which organ is likely malfunctioning?", a: ["Spleen", "Small intestine", "Bone marrow", "Pancreas"], c: 0 },
-        { q: "Which of these cytokines is responsible for the 'Chemical Trail' (Chemotaxis) that leads WBCs to a wound?", a: ["Chemokines", "Interferons", "Interleukins", "Complement"], c: 0 },
-        { q: "A cat is having a severe allergic reaction (Type I Hypersensitivity). Which cell/antibody pair is driving this?", a: ["Mast Cell / IgE", "Neutrophil / IgM", "Plasma Cell / IgG", "Macrophage / IgA"], c: 0 },
-        { q: "Identify the organ: It contains white pulp for immune defense and red pulp for blood storage.", a: ["Spleen", "Thymus", "Lymph node", "Bursa Fabricius"], c: 0 }
+        { q: "Which cell does NOT phagocytize foreign microbes or material?", a: ["Lymphocytes", "Monocytes", "Eosinophils", "Neutrophils"], c: 0 },
+        { q: "Which proteins are always in the plasma waiting to be activated by antigens?", a: ["Complement", "Cytokines", "Natural killer cells", "Inflammation"], c: 0 },
+        { q: "What organ contains macrophages that are especially active in removing aging/dead RBCs?", a: ["Spleen", "Liver", "Small intestine", "Large intestine"], c: 0 },
+        { q: "Which organ is critical to the development of T cells in mammals?", a: ["Thymus", "Spleen", "Bursa Fabricius", "Bone marrow"], c: 0 },
+        { q: "Which leukocyte is activated when an antigen binds to IgE, inducing an inflammatory response?", a: ["Mast cell", "Neutrophil", "Eosinophil", "Macrophage"], c: 0 },
+        { q: "Which organ contains white pulp (lymphoid tissue) and red pulp (blood storage)?", a: ["Spleen", "Thymus", "Lymph nodes", "Bone marrow"], c: 0 },
+        { q: "Which organ is critical to the development of B cells in mammals?", a: ["Bone marrow", "Bursa Fabricius", "Spleen", "Thymus"], c: 0 },
+        { q: "Which is a physical barrier acting as the first line of defense?", a: ["Skin", "Inflammation", "Tonsils", "Complement"], c: 0 },
+        { q: "The process of attracting WBCs to an area of inflammation or invasion is:", a: ["Chemotaxis", "Diapedesis", "Opsonization", "Degranulation"], c: 0 },
+        { q: "What is the process of coating microorganisms with factors to mark them for destruction?", a: ["Opsonization", "Degranulation", "Diapedesis", "Chemotaxis"], c: 0 },
+        { q: "Which cell is the primary component of humoral immunity?", a: ["Plasma cell", "Helper T cell", "Regulatory T cell", "Natural killer cell"], c: 0 },
+        { q: "The lymph nodes located behind the knee (stifle joint) are called:", a: ["Popliteal", "Inguinal", "Submandibular", "Prescapular"], c: 0 },
+        { q: "Which lymph node is frequently enlarged because of poor dental hygiene?", a: ["Submandibular", "Axillary", "Inguinal", "Prescapular"], c: 0 },
+        { q: "What are the aggregations of lymphoid tissue in the small intestine called?", a: ["Peyer's patches", "Tonsils", "Thymus", "MALT"], c: 0 },
+        { q: "The process of squeezing between endothelial cells to leave blood vessels is:", a: ["Diapedesis", "Chemotaxis", "Opsonization", "Degranulation"], c: 0 }
     ],
     skin: [
-        { q: "Clinical Note: A technician needs to dehorn a calf. Which specific structure must be removed to prevent any horn tissue from returning?", a: ["Horn Bud / Corium", "Keratin Layer", "Frontal Sinus", "Periosteum"], c: 0 },
-        { q: "Reverse Logic: Which is NOT a primary function of the skin?", a: ["Support of internal skeletal posture", "Vitamin D synthesis", "Prevention of desiccation", "Maintenance of body temperature"], c: 0 },
-        { q: "Which layer is known as the 'Thickest' part of the skin and contains the most nerves/vessels?", a: ["Dermis", "Epidermis", "Hypodermis", "Stratum Corneum"], c: 0 },
-        { q: "If a horse has a reddish-yellow coat, which pigment is predominating?", a: ["Phaeomelanin", "Eumelanin", "Keratin", "Lanolin"], c: 0 },
-        { q: "The 'Waterproof Seal' of the mammalian skin is primarily provided by secretions from which gland?", a: ["Sebaceous gland", "Sweat gland", "Anal gland", "Uropygial gland"], c: 0 }
+        { q: "Which pigment produces black and brown colorations in animals?", a: ["Eumelanin", "Agouti melanin", "Phaeomelanin", "Melanocortin"], c: 0 },
+        { q: "Which animal has spurs?", a: ["Chickens", "Dogs", "Cats", "Cattle"], c: 0 },
+        { q: "In which layer do cells fill with keratohyaline leading to cell death?", a: ["Stratum granulosum", "Papillary layer", "Stratum corneum", "Stratum germinativum"], c: 0 },
+        { q: "The dermis consists mostly of which type of tissue?", a: ["Connective tissue (collagen and elastin)", "Muscle tissue", "Epithelial tissue", "Adipose tissue"], c: 0 },
+        { q: "Which substance provides the waterproof quality to skin?", a: ["Keratin", "Omentum", "Mucin", "Glycosaminoglycans"], c: 0 },
+        { q: "What are the secondary sexual appendages of roosters called?", a: ["Comb and wattle", "Wattle and snood", "Comb and snood", "Snood and spurs"], c: 0 },
+        { q: "Which gland provides waterproofing for mammalian skin?", a: ["Sebaceous gland", "Anal gland", "Sweat gland", "Uropygial gland"], c: 0 },
+        { q: "When dehorning, which structure must be destroyed to prevent growth?", a: ["Corium", "Periosteum", "Keratin", "Horn bud"], c: 0 },
+        { q: "Which is the thickest layer of the skin?", a: ["Dermis", "Epidermis", "Hypodermis", "Muscle"], c: 0 },
+        { q: "The hypodermis consists mostly of which tissue type?", a: ["Connective tissue with lots of adipose", "Epithelial tissue", "Muscle", "Collagen only"], c: 0 },
+        { q: "In adult horned animals, the horn communicates directly with which sinus?", a: ["Frontal sinus", "Nasal sinus", "Maxillary sinus", "Nasomaxillary sinus"], c: 0 },
+        { q: "Which cells are dendritic cells in the epidermis?", a: ["Langerhans cells", "Keratinocytes", "Melanocytes", "Merkel cells"], c: 0 },
+        { q: "Which pigment produces red and yellow colorations?", a: ["Phaeomelanin", "Eumelanin", "Melanocortin", "Agouti melanin"], c: 0 }
     ],
     gi: [
-        { q: "Which structure connects the Pharynx to the Stomach, acting as the primary food transport tube?", a: ["Esophagus", "Duodenum", "Jejunum", "Trachea"], c: 0 },
-        { q: "Reverse Logic: In the Rumen, which of these is NOT a function of the resident microbes?", a: ["Production of Hydrochloric Acid", "Production of VFAs", "Mixing of content", "Regurgitation of cud"], c: 0 },
-        { q: "In poultry, if mechanical grinding of food is failing, which organ is likely affected?", a: ["Gizzard (Ventriculus)", "Proventriculus", "Crop", "Cecum"], c: 0 },
-        { q: "The 'True Stomach' of a ruminant, where glandular digestion occurs, is the:", a: ["Abomasum", "Rumen", "Reticulum", "Omasum"], c: 0 },
-        { q: "An animal that performs coprophagy (eating feces) to regain B-vitamins and protein is likely a:", a: ["Hindgut fermenter (like a Rabbit)", "Ruminant (like a Cow)", "Obligate Carnivore", "Omnivore"], c: 0 }
+        { q: "Which cell lines the intestinal tract?", a: ["Enterocyte", "Hepatocyte", "Osteocyte", "Monocyte"], c: 0 },
+        { q: "Which structure stores feces until defecation?", a: ["Rectum", "Colon", "Cecum", "Anus"], c: 0 },
+        { q: "Which structure is a blind pouch and part of the large intestine?", a: ["Cecum", "Ileum", "Crop", "Gizzard"], c: 0 },
+        { q: "Where does the majority of microbial fermentation occur in ruminants?", a: ["Rumen", "Cecum", "Reticulum", "Omasum"], c: 0 },
+        { q: "Which molecules increase the release of HCl in the stomach?", a: ["Acetylcholine, gastrin, and histamine", "Histamine and prostaglandins", "Cholecystokinin and secretin", "Gastrin and somatostatin"], c: 0 },
+        { q: "Which structure is after the stomach and before the jejunum?", a: ["Duodenum", "Ileum", "Esophagus", "Cecum"], c: 0 },
+        { q: "Which animals are hindgut fermenters (large cecum)?", a: ["Horses and rabbits", "Dogs and pigs", "Cats and cows", "Sheep and goats"], c: 0 },
+        { q: "Which structure is the glandular stomach of poultry?", a: ["Proventriculus", "Crop", "Gizzard", "Cecum"], c: 0 },
+        { q: "Where and how are volatile fatty acids (VFAs) produced in ruminants?", a: ["Rumen by microbes", "Abomasum by microbes", "Omasum by parietal cells", "Reticulum by gastric cells"], c: 0 },
+        { q: "Which animal is coprophagic as part of its regular digestive system?", a: ["Rabbits", "Cats", "Horses", "Dogs"], c: 0 },
+        { q: "What is the movement that propels contents through the intestines?", a: ["Peristalsis", "Segmentation", "Eructation", "Rumination"], c: 0 },
+        { q: "Where does bilirubin come from?", a: ["Breakdown of heme/hemoglobin", "Breakdown of WBCs", "Produced by the pancreas", "Absorbed from diet"], c: 0 }
     ],
     urinary: [
-        { q: "The Glomerular Filtration Rate (GFR) measures:", a: ["Amount of blood filtered by kidneys over time", "The percentage of sodium in urine", "The rate of ADH release", "The toxic level of ammonia"], c: 0 },
-        { q: "Which 'Osmotic Hitchhiker' do Glucose and Amino Acids use to get reabsorbed into the blood?", a: ["Sodium", "Potassium", "Chloride", "Calcium"], c: 0 },
-        { q: "If a kidney is failing to stimulate RBC production, it is likely not producing enough:", a: ["Erythropoietin (EPO)", "Renin", "ADH", "Aldosterone"], c: 0 },
-        { q: "Scenario: A reptile lacks this nephron structure, making it harder for them to concentrate urine compared to mammals:", a: ["Loop of Henle", "Glomerulus", "PCT", "DCT"], c: 0 },
-        { q: "Which hormone acts on the DCT to 'Save Sodium' (reabsorption)?", a: ["Aldosterone", "ADH", "Insulin", "Bicarbonate"], c: 0 }
+        { q: "What does the sodium-potassium pump do?", a: ["Moves sodium out and potassium in", "Moves both out", "Moves potassium out and sodium in", "Moves both in"], c: 0 },
+        { q: "What is the basic functional unit of the kidney?", a: ["Nephron", "Loop of Henle", "Glomerulus", "Bowman's capsule"], c: 0 },
+        { q: "Which nitrogenous waste is the most toxic?", a: ["Ammonia", "Urea", "Uric acid", "Nitrates"], c: 0 },
+        { q: "Which structure is absent from reptilian nephrons?", a: ["Loop of Henle", "PCT", "Glomerulus", "DCT"], c: 0 },
+        { q: "What is the Glomerular Filtration Rate (GFR)?", a: ["Amount of blood filtered by kidneys over time", "Number of glomeruli", "Amount of glucose reabsorbed", "Total blood volume"], c: 0 },
+        { q: "The urinary bladder is lined with which cell type?", a: ["Transitional epithelial cells", "Cuboidal cells", "Smooth muscle", "Squamous cells"], c: 0 },
+        { q: "Which hormone produced by the kidney is necessary for RBC production?", a: ["Erythropoietin (EPO)", "ADH", "Aldosterone", "Insulin"], c: 0 },
+        { q: "Aldosterone causes the reabsorption of what in the DCT?", a: ["Sodium", "Potassium", "Urea", "Nitrogen"], c: 0 },
+        { q: "The kidneys are located in which space?", a: ["Retroperitoneal space", "Thoracic cavity", "Caudal pelvis", "Scrotum"], c: 0 },
+        { q: "Glucose and amino acids 'hitch a ride' back into the blood with which molecule?", a: ["Sodium", "Calcium", "Potassium", "Chloride"], c: 0 }
     ]
 };
 
@@ -92,8 +122,11 @@ let missed = [];
 
 function startQuiz(cat) {
     qIdx = 0; score = 0; missed = [];
-    if(cat === 'all') currentSet = [...bank.immune, ...bank.skin, ...bank.gi, ...bank.urinary];
-    else currentSet = [...bank[cat]];
+    if(cat === 'all') {
+        currentSet = [...bank.immune, ...bank.skin, ...bank.gi, ...bank.urinary];
+    } else {
+        currentSet = [...bank[cat]];
+    }
     
     currentSet.sort(() => Math.random() - 0.5);
     document.getElementById("startMenu").style.display = "none";
@@ -105,7 +138,7 @@ function startQuiz(cat) {
 function showQuestion() {
     const q = currentSet[qIdx];
     const box = document.getElementById("optionsBox");
-    document.getElementById("qCount").textContent = `QUESTION ${qIdx + 1} / ${currentSet.length}`;
+    document.getElementById("qCount").textContent = `QUESTION ${qIdx + 1} OF ${currentSet.length}`;
     document.getElementById("progressInner").style.width = `${(qIdx / currentSet.length) * 100}%`;
     document.getElementById("questionText").textContent = q.q;
     document.getElementById("feedback").style.display = "none";
@@ -125,13 +158,15 @@ function showQuestion() {
             if(opt.isCorrect) {
                 score++;
                 btn.classList.add("correct");
-                document.getElementById("feedback").textContent = "🎯 Exact! Great reasoning.";
-                document.getElementById("feedback").className = "correct";
+                document.getElementById("feedback").textContent = "✨ Correct!";
+                document.getElementById("feedback").style.backgroundColor = "#dcfce7";
+                document.getElementById("feedback").style.color = "var(--success)";
             } else {
                 btn.classList.add("wrong");
                 missed.push({ q: q.q, a: q.a[q.c] });
-                document.getElementById("feedback").textContent = `⚠️ Careful! The correct answer is: ${q.a[q.c]}`;
-                document.getElementById("feedback").className = "wrong";
+                document.getElementById("feedback").textContent = `❌ Incorrect. Correct: ${q.a[q.c]}`;
+                document.getElementById("feedback").style.backgroundColor = "#fee2e2";
+                document.getElementById("feedback").style.color = "var(--error)";
                 all.forEach(b => { if(b.textContent === q.a[q.c]) b.classList.add("correct"); });
             }
             document.getElementById("feedback").style.display = "block";
@@ -151,13 +186,15 @@ function showResults() {
     document.getElementById("quizBox").style.display = "none";
     document.getElementById("resultBox").style.display = "block";
     const pct = Math.round((score/currentSet.length)*100);
-    document.getElementById("scoreBig").textContent = `${pct}% - ${pct >= 80 ? 'Vet Tech Pro! 🐾' : 'Keep Studying! 📖'}`;
+    document.getElementById("scoreBig").textContent = `${pct}%`;
+    document.getElementById("scoreDetail").textContent = `You answered ${score} out of ${currentSet.length} correctly.`;
     const list = document.getElementById("reviewList");
-    list.innerHTML = missed.length === 0 ? "Perfect! You master these concepts." : "";
+    list.innerHTML = "";
+    if(missed.length === 0) list.innerHTML = "<p>Perfect score! You've mastered these topics.</p>";
     missed.forEach(m => {
         const d = document.createElement("div");
         d.className = "review-item";
-        d.innerHTML = `<b>Q:</b> ${m.q}<br><b style="color:var(--success)">Correct A:</b> ${m.a}`;
+        d.innerHTML = `<strong>Q:</strong> ${m.q}<br><span style="color:var(--success)"><strong>Answer:</strong> ${m.a}</span>`;
         list.appendChild(d);
     });
 }
